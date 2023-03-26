@@ -19,7 +19,9 @@ type FloatplaneChatSocket struct {
 	channel  string
 }
 
-func NewFloatplaneChatSocket(channel string, sailsToken string) (*FloatplaneChatSocket, error) {
+func NewFloatplaneChatSocket(channel string) (*FloatplaneChatSocket, error) {
+	sailsToken := Login()
+
 	if !strings.HasPrefix(sailsToken, "s:") {
 		return nil, fmt.Errorf("sailsToken doesn't start with `s:`, likely not valid")
 	}

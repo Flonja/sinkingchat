@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/flonja/sinkingchat/chat"
 	"golang.org/x/exp/slices"
@@ -10,10 +9,7 @@ import (
 const LinusTechTips = "/live/5c13f3c006f1be15e08e05c0"
 
 func main() {
-	token := flag.String("token", "", "Sails token for socket authentication")
-	flag.Parse()
-
-	socket, err := chat.NewFloatplaneChatSocket(LinusTechTips, *token)
+	socket, err := chat.NewFloatplaneChatSocket(LinusTechTips)
 	if err != nil {
 		panic(err)
 	}
