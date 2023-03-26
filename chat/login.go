@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"time"
 	"github.com/tebeka/selenium"
+	"github.com/zalando/go-keyring"
 )
 
 func pickUnusedPort() (int, error) {
@@ -25,9 +26,8 @@ func pickUnusedPort() (int, error) {
 	return port, nil
 }
 
-func Login() string {
+func RequestUserLogin() string {
 	const chromeDriverPath = "/usr/local/bin/chromedriver"
-
 
 	// Set up Selenium and Chromedriver
 	port, err := pickUnusedPort()
@@ -79,6 +79,27 @@ func Login() string {
 	token, err := url.QueryUnescape(cookie.Value)
 	if err != nil {
 		panic(err)
+	}
+
+	return token
+}
+
+func Login() string {
+	service := "SinkingChat"
+	user := "FloatPlane"
+
+	// Fetch the token from the keyring if possible
+	token, err := keyring.Get(service, user)
+	if err != nil {
+		// If it fails, have the user log in
+		token = RequestUserLogin()
+
+		// Save the new token to the keyring
+		err = keyring.Set(service, user, password)
+		if err != nil {
+			// If that fails, tell the user but proceed
+			log.Fatal(err)
+		}
 	}
 
 	return token

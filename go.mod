@@ -10,6 +10,11 @@ require (
 )
 
 require (
+	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
+	github.com/danieljoos/wincred v1.1.2 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gorilla/websocket v1.4.1 // indirect
+	github.com/zalando/go-keyring v0.2.2 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
