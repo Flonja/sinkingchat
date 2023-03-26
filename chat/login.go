@@ -95,10 +95,12 @@ func Login() string {
 		token = RequestUserLogin()
 
 		// Save the new token to the keyring
-		err = keyring.Set(service, user, password)
+		err = keyring.Set(service, user, token)
 		if err != nil {
 			// If that fails, tell the user but proceed
-			log.Fatal(err)
+			print("Error saving token to keyring: ")
+			print(err)
+			print("\n")
 		}
 	}
 
