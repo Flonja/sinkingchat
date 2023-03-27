@@ -72,7 +72,7 @@ func (f *FloatplaneChatSocket) Users() (*ResponseUserList, error) {
 
 // SendMessage sends a message to the chat.
 func (f *FloatplaneChatSocket) SendMessage(message string) error {
-	var out *any
+	var out *any = nil
 	return ack(f, newSendLivestreamMsgRequest(f.channel, message), out)
 }
 
@@ -83,7 +83,7 @@ func (f *FloatplaneChatSocket) SendMessageEmit(message string) error {
 
 // Close formally exits the socket from the room and closes the socket too
 func (f *FloatplaneChatSocket) Close() error {
-	var out *any
+	var out *any = nil
 	if err := ack(f, newLeaveLivestreamRequest(f.channel), out); err != nil {
 		return err
 	}
