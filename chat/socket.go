@@ -72,8 +72,8 @@ func (f *FloatplaneChatSocket) Users() (*ResponseUserList, error) {
 
 // SendMessage sends a message to the chat.
 func (f *FloatplaneChatSocket) SendMessage(message string) error {
-	var out any = nil
-	return ack(f, newSendLivestreamMsgRequest(f.channel, message), &out)
+	var out *any
+	return ack(f, newSendLivestreamMsgRequest(f.channel, message), out)
 }
 
 // SendMessageEmit sends a message to the chat without waiting for it to be acknowledged.
@@ -83,8 +83,8 @@ func (f *FloatplaneChatSocket) SendMessageEmit(message string) error {
 
 // Close formally exits the socket from the room and closes the socket too
 func (f *FloatplaneChatSocket) Close() error {
-	var out any = nil
-	if err := ack(f, newLeaveLivestreamRequest(f.channel), &out); err != nil {
+	var out *any
+	if err := ack(f, newLeaveLivestreamRequest(f.channel), out); err != nil {
 		return err
 	}
 	f.c.Close()
@@ -120,7 +120,7 @@ func ack[T any](f *FloatplaneChatSocket, request *Request, out *T) error {
 	if err = json.Unmarshal([]byte(resp), r); err != nil {
 		return err
 	}
-	if out == nil {
+	if &out == nil {
 		// Does not want to decode the body
 		return nil
 	}
