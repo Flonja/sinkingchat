@@ -124,6 +124,9 @@ func ack[T any](f *FloatplaneChatSocket, request *Request, out *T) error {
 	if err = json.Unmarshal([]byte(resp), r); err != nil {
 		return err
 	}
+	if r.StatusCode >= 200 && r.StatusCode < 300 {
+		return fmt.Errorf("unsuccessful status code: %v", resp)
+	}
 	if err = mapstructure.Decode(r.Body, out); err != nil {
 		return err
 	}
