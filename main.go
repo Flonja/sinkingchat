@@ -36,7 +36,7 @@ func main() {
 
 	if err = socket.Listen(func(message *chat.ResponseRoomMessage) {
 		if slices.Contains(message.Mentions(), socket.Username()) && message.UserGuid != socket.Guid() {
-			if err = socket.SendMessage(fmt.Sprintf("%v mentioned me in their message!", message.Username)); err != nil {
+			if err = socket.SendMessageEmit(fmt.Sprintf("%v mentioned me in their message!", message.Username)); err != nil {
 				panic(err)
 			}
 		}

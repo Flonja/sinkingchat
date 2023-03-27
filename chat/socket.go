@@ -59,20 +59,40 @@ func (f *FloatplaneChatSocket) Guid() string {
 	return f.guid
 }
 
+// Emotes gets all current emotes that are available.
 func (f *FloatplaneChatSocket) Emotes() ([]Emote, bool) {
 	return *f.emotes, f.emotes != nil
 }
 
+// Users gets the entire list of users watching/waiting for the stream.
 func (f *FloatplaneChatSocket) Users() (*ResponseUserList, error) {
 	d := &ResponseUserList{}
 	return d, ack(f, newGetUserListRequest(f.channel), d)
 }
 
+// SendMessage sends a message to the chat.
 func (f *FloatplaneChatSocket) SendMessage(message string) error {
+	var out any = nil
+	return ack(f, newSendLivestreamMsgRequest(f.channel, message), &out)
+}
+
+// SendMessageEmit sends a message to the chat without waiting for it to be acknowledged.
+func (f *FloatplaneChatSocket) SendMessageEmit(message string) error {
 	return f.c.Emit("post", newSendLivestreamMsgRequest(f.channel, message))
 }
 
+// Close formally exits the socket from the room and closes the socket too
 func (f *FloatplaneChatSocket) Close() error {
+	var out any = nil
+	if err := ack(f, newLeaveLivestreamRequest(f.channel), &out); err != nil {
+		return err
+	}
+	f.c.Close()
+	return nil
+}
+
+// CloseEmit formally exits the socket from the room without waiting for it to be acknowledged and closes the socket too.
+func (f *FloatplaneChatSocket) CloseEmit() error {
 	if err := f.c.Emit("get", newLeaveLivestreamRequest(f.channel)); err != nil {
 		return err
 	}
@@ -80,6 +100,7 @@ func (f *FloatplaneChatSocket) Close() error {
 	return nil
 }
 
+// Listen is a event listener for any chat message that may get sent while being in the room.
 func (f *FloatplaneChatSocket) Listen(function func(*ResponseRoomMessage)) error {
 	return f.c.On("radioChatter", func(c *gosocketio.Channel, args interface{}) {
 		d := &ResponseRoomMessage{}
@@ -98,6 +119,10 @@ func ack[T any](f *FloatplaneChatSocket, request *Request, out *T) error {
 	r := &Response{}
 	if err = json.Unmarshal([]byte(resp), r); err != nil {
 		return err
+	}
+	if out == nil {
+		// Does not want to decode the body
+		return nil
 	}
 	if err = mapstructure.Decode(r.Body, out); err != nil {
 		return err
