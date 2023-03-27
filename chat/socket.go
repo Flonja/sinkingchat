@@ -116,13 +116,13 @@ func ack[T any](f *FloatplaneChatSocket, request *Request, out *T) error {
 		return err
 	}
 
+	if out == nil {
+		// Does not want to decode the response
+		return nil
+	}
 	r := &Response{}
 	if err = json.Unmarshal([]byte(resp), r); err != nil {
 		return err
-	}
-	if out == nil {
-		// Does not want to decode the body
-		return nil
 	}
 	if err = mapstructure.Decode(r.Body, out); err != nil {
 		return err

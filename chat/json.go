@@ -8,7 +8,7 @@ type Request struct {
 }
 
 type Response struct {
-	Body       map[string]any    `json:"body"`
+	Body       any               `json:"body"`
 	Headers    map[string]string `json:"headers"`
 	StatusCode int               `json:"statusCode"`
 }
