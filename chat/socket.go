@@ -6,6 +6,7 @@ import (
 	gosocketio "github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
 	"github.com/mitchellh/mapstructure"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -23,12 +24,13 @@ func NewFloatplaneChatSocket(channel string, sailsToken string) (*FloatplaneChat
 	if !strings.HasPrefix(sailsToken, "s:") {
 		return nil, fmt.Errorf("sailsToken doesn't start with `s:`, likely not valid")
 	}
+	requestHeader := http.Header{}
+	requestHeader.Set("Origin", "https://www.floatplane.com")
+	requestHeader.Set("Cookie", fmt.Sprintf("sails.sid=%v", sailsToken))
 
 	wssUrl := "wss://chat.floatplane.com/socket.io/?__sails_io_sdk_version=0.13.8&__sails_io_sdk_platform=browser&__sails_io_sdk_language=javascript&EIO=3&transport=websocket"
 	trnsprt := transport.GetDefaultWebsocketTransport()
-	trnsprt.RequestHeader = http.Header{}
-	trnsprt.RequestHeader.Set("Origin", "https://www.floatplane.com")
-	trnsprt.RequestHeader.Set("Cookie", fmt.Sprintf("sails.sid=%v", sailsToken))
+	trnsprt.RequestHeader = requestHeader
 	client, err := gosocketio.Dial(wssUrl, trnsprt)
 	if err != nil {
 		return nil, err
@@ -41,12 +43,25 @@ func NewFloatplaneChatSocket(channel string, sailsToken string) (*FloatplaneChat
 	if d.Success {
 		socket.emotes = d.Emotes
 	}
-	msg := &ResponseRoomMessage{}
-	if err = ack(socket, newSendLivestreamMsgRequest(socket.channel, "Initialized!"), msg); err != nil {
+
+	req, err := http.NewRequest("GET", "https://www.floatplane.com/api/v3/user/self", nil)
+	if err != nil {
 		return nil, err
 	}
-	socket.username = msg.Username
-	socket.guid = msg.UserGuid
+	req.Header = requestHeader
+	c := http.Client{}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if b, err := io.ReadAll(resp.Body); err == nil {
+		var m map[string]any
+		if err = json.Unmarshal(b, &m); err != nil {
+			return nil, err
+		}
+		socket.username = m["username"].(string)
+		socket.guid = m["id"].(string)
+	}
 
 	return socket, nil
 }
